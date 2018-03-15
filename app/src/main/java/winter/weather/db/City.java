@@ -1,14 +1,16 @@
 package winter.weather.db;
 
+import org.litepal.crud.DataSupport;
+
 /**
  * Created by winter on 3/12/2018.
  */
 
-public class City {
+public class City extends DataSupport {
     private int id;
     private String cityName;
     private int cityCode;
-    private int porvinceId;
+    private int provinceId;
 
     public void setId(int id) {
         this.id = id;
@@ -22,8 +24,8 @@ public class City {
         this.cityCode = cityCode;
     }
 
-    public void setPorvinceId(int porvinceId) {
-        this.porvinceId = porvinceId;
+    public void setProvinceId(int provinceId) {
+        this.provinceId = provinceId;
     }
 
     public int getId() {
@@ -39,7 +41,7 @@ public class City {
         return cityCode;
     }
 
-    public int getPorvinceId() {
-        return porvinceId;
+    public int getProvinceId() {
+        return provinceId;
     }
 }

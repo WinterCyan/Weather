@@ -1,10 +1,12 @@
 package winter.weather.db;
 
+import org.litepal.crud.DataSupport;
+
 /**
  * Created by winter on 3/12/2018.
  */
 
-public class Province {
+public class Province extends DataSupport{
     private int id;
     private String provinceName;
     private int provinceCode;
