@@ -2,6 +2,7 @@ package winter.weather;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -27,6 +28,7 @@ import okhttp3.Response;
 import winter.weather.db.City;
 import winter.weather.db.County;
 import winter.weather.db.Province;
+import winter.weather.gson.Weather;
 import winter.weather.util.HttpUtil;
 import winter.weather.util.Utility;
 
@@ -76,6 +78,12 @@ public class ChooseAreaFragment extends Fragment {
                 }else if (currentLevel == LEVEL_CITY){
                     selectedCity = cityList.get(position);
                     queryCounties();
+                }else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -90,6 +98,7 @@ public class ChooseAreaFragment extends Fragment {
         });
         queryProvinces();
     }
+
 
     private void queryProvinces() {
         titleText.setText("China");
@@ -141,6 +150,7 @@ public class ChooseAreaFragment extends Fragment {
         backBtn.setVisibility(View.VISIBLE);
         countyList = DataSupport.where("cityId = ?", String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size() > 0){
+            Log.d(TAG, "queryCounties: from local database");
             dataList.clear();
             for (County county : countyList)
                 dataList.add(county.getCountyName());
@@ -148,6 +158,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         }else {
+            Log.d(TAG, "queryCounties: from internet");
             int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
             String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
