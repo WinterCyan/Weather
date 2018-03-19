@@ -37,7 +37,6 @@ import winter.weather.util.Utility;
  */
 
 public class ChooseAreaFragment extends Fragment {
-    private static final String TAG = "ChooseAeraFragment";
     public static final int LEVEL_PROVINCE = 0;
     public static final int LEVEL_CITY = 1;
     public static final int LEVEL_COUNTY = 2;
@@ -80,10 +79,17 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 }else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.refreshLayout.setRefreshing(false);
+                        activity.requestWeather(weatherId);
+                    }
                 }
             }
         });
@@ -102,22 +108,16 @@ public class ChooseAreaFragment extends Fragment {
 
     private void queryProvinces() {
         titleText.setText("China");
-        Log.d(TAG, "queryProvinces: setText china.");
         backBtn.setVisibility(View.GONE);
-        Log.d(TAG, "queryProvinces: backBtn gone.");
         provinceList = DataSupport.findAll(Province.class);
-        Log.d(TAG, "queryProvinces: findAll done.");
         if (provinceList.size() > 0){
-            Log.d(TAG, "queryProvinces: from local database.");
             dataList.clear();
             for (Province province : provinceList)
                 dataList.add(province.getProvinceName());
-            Log.d(TAG, "queryProvinces: " + dataList.toString());
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel = LEVEL_PROVINCE;
         }else {
-            Log.d(TAG, "queryProvinces: from internet.");
             String address = "http://guolin.tech/api/china";
             queryFromServer(address, "province");
         }
@@ -150,7 +150,6 @@ public class ChooseAreaFragment extends Fragment {
         backBtn.setVisibility(View.VISIBLE);
         countyList = DataSupport.where("cityId = ?", String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size() > 0){
-            Log.d(TAG, "queryCounties: from local database");
             dataList.clear();
             for (County county : countyList)
                 dataList.add(county.getCountyName());
@@ -158,7 +157,6 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         }else {
-            Log.d(TAG, "queryCounties: from internet");
             int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
             String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
@@ -183,7 +181,6 @@ public class ChooseAreaFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
-                Log.d(TAG, "onResponse: " + responseText);
                 boolean result = false;
                 if ("province".equals(type))
                     result = Utility.handleProvinceResponse(responseText);
